@@ -16,7 +16,7 @@ Watches the chain for Bitcoin -> EVM swaps and automatically claims them on beha
 1. Install npm packages: ```npm install```
 2. Install typescript: ```npm install -g typescript```
 3. Compile to javascript: ```tsc```
-4. Setup bitcoind node in testnet mode (example config is in [bitcoin.conf](https://github.com/adambor/BtcRelay-Sol-TS/blob/main/bitcoin/bitcoin.conf) file)
+4. Setup bitcoind node in testnet mode (example config is in [bitcoin.conf](https://github.com/adambor/BtcRelay-Sol-TS/blob/main/bitcoin/mainnet.bitcoin.conf) (for mainnet) or [bitcoin.conf](https://github.com/adambor/BtcRelay-Sol-TS/blob/main/bitcoin/bitcoin.conf) (for testnet) file)
 5. Rename _Q.env (if running on Q) or _POLYGON.env (if running on polygon) file to .env
 6. Fill in the details of your bitcoind node in .env file (you don't have to edit this file when using local node and a provided [bitcoin.conf](https://github.com/adambor/BtcRelay-EVM-TS/blob/main/bitcoin/bitcoin.conf) config)
 7. Generate a new EVM keypair: ```npm run genKey```
