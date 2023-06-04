@@ -95,7 +95,39 @@ async function main() {
 
     const watchtower = new Watchtower<EVMSwapData, EVMBtcStoredHeader, UnsignedTransaction>("./storage/wt", btcRelay, synchronizer, chainEvents, swapProgram, bitcoinRpc, 30);
 
-    const tipBlock = await btcRelay.getTipData();
+    let tipBlock = await btcRelay.getTipData();
+
+    if(tipBlock==null) {
+        const tipHeight = (await bitcoinRpc.getTipHeight())-25;
+        const lastDiffAdjustmentBlockHeight = tipHeight-(tipHeight%2016);
+
+        const submitBlockHash = await bitcoinRpc.getBlockhash(tipHeight);
+        const submitBlock = await bitcoinRpc.getBlockHeader(submitBlockHash);
+
+        const lastDiffAdjBlockHash = await bitcoinRpc.getBlockhash(lastDiffAdjustmentBlockHeight);
+        const lastDiffAdjBlock = await bitcoinRpc.getBlockHeader(lastDiffAdjBlockHash);
+
+        const prevBlockTimestamps: number[] = [];
+        let lastBlockHash = submitBlock.getPrevBlockhash();
+        for(let i=0;i<10;i++) {
+            const prevBlock = await bitcoinRpc.getBlockHeader(lastBlockHash);
+            prevBlockTimestamps.push(prevBlock.getTimestamp());
+
+            lastBlockHash = prevBlock.getPrevBlockhash();
+        }
+
+        const tx = await btcRelay.saveInitialHeader(submitBlock, lastDiffAdjBlock.getTimestamp(), prevBlockTimestamps.reverse());
+
+        const txResult = await EVMSigner.sendTransaction(tx);
+
+        await EVMSigner.provider.waitForTransaction(txResult.hash);
+
+        console.log("[Main]: BTC relay initialized at: ", txResult.hash);
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        tipBlock = await btcRelay.getTipData();
+    }
 
     console.log("[Main]: BTC relay tip height: ", tipBlock.blockheight);
 
